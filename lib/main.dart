@@ -6,7 +6,7 @@ import 'screens/auth/register_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 
-void main() {
+  void main() {
   runApp(const HuellaApp());
 }
 

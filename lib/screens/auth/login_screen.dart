@@ -22,8 +22,10 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       await Future.delayed(const Duration(seconds: 1)); // simula llamada
+      // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error de autenticación')));
     } finally {
       setState(() => _loading = false);
