@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
+import 'package:provider/provider.dart';
 import '../home/home_screen.dart';
 import 'package:huella/core/utils/validators.dart';
+import '../../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
@@ -20,13 +22,40 @@ class _LoginScreenState extends State<LoginScreen> {
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
+
     try {
-      await Future.delayed(const Duration(seconds: 1)); // simula llamada
-      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final response = await authProvider.login(
+        _emailCtl.text.trim(),
+        _passCtl.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      if (response['ok']) {
+        // Login exitoso
+        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      } else {
+        // Mostrar error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Error de autenticación'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error de autenticación')));
+      print('🚨 Error en login screen: $e'); // Para debug
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error de autenticación: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -49,28 +78,42 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               TextFormField(
                 controller: _emailCtl,
-                decoration: const InputDecoration(labelText: 'Correo electrónico', prefixIcon: Icon(Icons.email)),
+                decoration: const InputDecoration(
+                  labelText: 'Correo electrónico',
+                  prefixIcon: Icon(Icons.email),
+                ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (v) => isValidEmail(v ?? '') ? null : 'Correo inválido',
+                validator: (v) =>
+                    isValidEmail(v ?? '') ? null : 'Correo inválido',
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passCtl,
-                decoration: const InputDecoration(labelText: 'Contraseña', prefixIcon: Icon(Icons.lock)),
+                decoration: const InputDecoration(
+                  labelText: 'Contraseña',
+                  prefixIcon: Icon(Icons.lock),
+                ),
                 obscureText: true,
-                validator: (v) => (v != null && v.length >= 6) ? null : 'Mínimo 6 caracteres',
+                validator: (v) =>
+                    (v != null && v.length >= 6) ? null : 'Mínimo 6 caracteres',
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48), backgroundColor: const Color(0xFF4CAF50)),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  backgroundColor: const Color(0xFF4CAF50),
+                ),
                 onPressed: _loading ? null : _submit,
-                child: _loading ? const CircularProgressIndicator(color: Colors.white) : const Text('Entrar'),
+                child: _loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Entrar'),
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () => Navigator.pushNamed(context, RegisterScreen.routeName),
+                onPressed: () =>
+                    Navigator.pushNamed(context, RegisterScreen.routeName),
                 child: const Text('¿No tienes cuenta? Regístrate'),
-              )
+              ),
             ],
           ),
         ),
