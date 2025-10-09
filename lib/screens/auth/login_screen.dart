@@ -22,13 +22,13 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       await Future.delayed(const Duration(seconds: 1)); // simula llamada
-      // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
     } catch (e) {
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error de autenticación')));
     } finally {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -51,28 +51,42 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               TextFormField(
                 controller: _emailCtl,
-                decoration: const InputDecoration(labelText: 'Correo electrónico', prefixIcon: Icon(Icons.email)),
+                decoration: const InputDecoration(
+                  labelText: 'Correo electrónico',
+                  prefixIcon: Icon(Icons.email),
+                ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (v) => isValidEmail(v ?? '') ? null : 'Correo inválido',
+                validator: (v) =>
+                    isValidEmail(v ?? '') ? null : 'Correo inválido',
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passCtl,
-                decoration: const InputDecoration(labelText: 'Contraseña', prefixIcon: Icon(Icons.lock)),
+                decoration: const InputDecoration(
+                  labelText: 'Contraseña',
+                  prefixIcon: Icon(Icons.lock),
+                ),
                 obscureText: true,
-                validator: (v) => (v != null && v.length >= 6) ? null : 'Mínimo 6 caracteres',
+                validator: (v) =>
+                    (v != null && v.length >= 6) ? null : 'Mínimo 6 caracteres',
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48), backgroundColor: const Color(0xFF4CAF50)),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  backgroundColor: const Color(0xFF4CAF50),
+                ),
                 onPressed: _loading ? null : _submit,
-                child: _loading ? const CircularProgressIndicator(color: Colors.white) : const Text('Entrar'),
+                child: _loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Entrar'),
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () => Navigator.pushNamed(context, RegisterScreen.routeName),
+                onPressed: () =>
+                    Navigator.pushNamed(context, RegisterScreen.routeName),
                 child: const Text('¿No tienes cuenta? Regístrate'),
-              )
+              ),
             ],
           ),
         ),
