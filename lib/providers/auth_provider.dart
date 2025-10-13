@@ -13,7 +13,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final url = Uri.parse('$_baseUrl/login');
 
-      print('📤 Intentando login con: $email'); // Para debug
+      // Para debug
 
       final response = await http.post(
         url,
@@ -21,8 +21,8 @@ class AuthProvider extends ChangeNotifier {
         body: json.encode({'email': email, 'password': password}),
       );
 
-      print('📡 Status code: ${response.statusCode}'); // Para debug
-      print('📡 Response body: ${response.body}'); // Para debug
+      // Para debug
+      // Para debug
 
       isLoading = false;
       notifyListeners();
@@ -38,7 +38,7 @@ class AuthProvider extends ChangeNotifier {
         };
       }
     } catch (e) {
-      print('🚨 Error en login: $e'); // Para debug
+      // Para debug
       isLoading = false;
       notifyListeners();
       return {'ok': false, 'message': 'Error de conexión: $e'};
