@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
+// Providers
 import 'providers/auth_provider.dart';
+import 'providers/community_provider.dart';
+
+// Screens
 import 'screens/auth/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
@@ -17,8 +22,11 @@ class HuellaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => CommunityProvider()), 
+      ],
       child: MaterialApp(
         title: 'Huella+',
         debugShowCheckedModeBanner: false,
@@ -26,7 +34,9 @@ class HuellaApp extends StatelessWidget {
           primaryColor: const Color(0xFF4CAF50),
           scaffoldBackgroundColor: const Color(0xFFF5F5F5),
           textTheme: GoogleFonts.poppinsTextTheme(),
-          appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF4CAF50)),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFF4CAF50),
+          ),
         ),
         initialRoute: SplashScreen.routeName,
         routes: {

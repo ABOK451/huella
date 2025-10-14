@@ -6,29 +6,36 @@ class AuthProvider extends ChangeNotifier {
   final String _baseUrl = 'http://localhost:4000/api/auth';
   bool isLoading = false;
 
+  String? _token;
+  Map<String, dynamic>? _user;
+
+  String? get token => _token;
+  Map<String, dynamic>? get user => _user;
+
+  /// 🧠 LOGIN
   Future<Map<String, dynamic>> login(String email, String password) async {
     isLoading = true;
     notifyListeners();
 
     try {
       final url = Uri.parse('$_baseUrl/login');
-
-      print('📤 Intentando login con: $email'); // Para debug
-
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
 
-      print('📡 Status code: ${response.statusCode}'); // Para debug
-      print('📡 Response body: ${response.body}'); // Para debug
-
       isLoading = false;
       notifyListeners();
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> decodedData = json.decode(response.body);
+
+        // ✅ Guardar token y datos del usuario
+        _token = decodedData['token'];
+        _user = decodedData['user'];
+        notifyListeners();
+
         return {'ok': true, 'data': decodedData};
       } else {
         final Map<String, dynamic> errorData = json.decode(response.body);
@@ -38,13 +45,13 @@ class AuthProvider extends ChangeNotifier {
         };
       }
     } catch (e) {
-      print('🚨 Error en login: $e'); // Para debug
       isLoading = false;
       notifyListeners();
       return {'ok': false, 'message': 'Error de conexión: $e'};
     }
   }
 
+  /// 🧾 REGISTER
   Future<Map<String, dynamic>> register(String email, String password) async {
     try {
       final response = await http.post(
@@ -61,5 +68,12 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       return {'ok': false, 'message': e.toString()};
     }
+  }
+
+  /// 🚪 LOGOUT (opcional)
+  void logout() {
+    _token = null;
+    _user = null;
+    notifyListeners();
   }
 }
