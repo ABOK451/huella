@@ -20,6 +20,8 @@ class CommunityProvider extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         _posts = json.decode(response.body);
+      } else {
+        debugPrint('Error fetchPosts: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('Error fetchPosts: $e');
@@ -29,20 +31,20 @@ class CommunityProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Crear nueva publicación
+  /// Crear nueva publicación (con token de autenticación)
   Future<Map<String, dynamic>> createPost({
-    required String userId,
-    required String message, // cambio de "contenido" a "message"
+    required String message,
+    required String token,
   }) async {
     try {
       final url = Uri.parse(_baseUrl);
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'userId': userId,
-          'message': message,
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // 👈 Token del usuario logueado
+        },
+        body: json.encode({'message': message}),
       );
 
       if (response.statusCode == 201) {
@@ -51,10 +53,10 @@ class CommunityProvider extends ChangeNotifier {
         notifyListeners();
         return {'ok': true, 'data': newPost};
       } else {
+        final body = json.decode(response.body);
         return {
           'ok': false,
-          'message': json.decode(response.body)['message'] ??
-              'Error al crear publicación',
+          'message': body['message'] ?? 'Error al crear publicación',
         };
       }
     } catch (e) {
@@ -63,10 +65,13 @@ class CommunityProvider extends ChangeNotifier {
   }
 
   /// Dar like a una publicación
-  Future<void> likePost(String postId) async {
+  Future<void> likePost(String postId, String token) async {
     try {
       final url = Uri.parse('$_baseUrl/$postId/like');
-      final response = await http.patch(url); // PATCH en vez de POST
+      final response = await http.patch(
+        url,
+        headers: {'Authorization': 'Bearer $token'}, // 👈 Aquí también
+      );
 
       if (response.statusCode == 200) {
         final updatedPost = json.decode(response.body);
@@ -75,6 +80,8 @@ class CommunityProvider extends ChangeNotifier {
           _posts[index] = updatedPost;
           notifyListeners();
         }
+      } else {
+        debugPrint('Error likePost: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('Error likePost: $e');
@@ -82,14 +89,19 @@ class CommunityProvider extends ChangeNotifier {
   }
 
   /// Eliminar publicación
-  Future<void> deletePost(String postId) async {
+  Future<void> deletePost(String postId, String token) async {
     try {
       final url = Uri.parse('$_baseUrl/$postId');
-      final response = await http.delete(url);
+      final response = await http.delete(
+        url,
+        headers: {'Authorization': 'Bearer $token'}, // 👈 también con token
+      );
 
       if (response.statusCode == 200) {
         _posts.removeWhere((p) => p['_id'] == postId);
         notifyListeners();
+      } else {
+        debugPrint('Error deletePost: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('Error deletePost: $e');

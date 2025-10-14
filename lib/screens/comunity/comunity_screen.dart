@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:huella/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import '../../providers/community_provider.dart';
 
@@ -84,16 +85,34 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     onPressed: () async {
                       final content = _newPostController.text.trim();
                       if (content.isNotEmpty) {
-                        await communityProvider.createPost(
-                          userId: '123', // Reemplaza con el ID real del usuario
-                          message:
-                              content, // <-- cambia "contenido" a "message"
+                        final authProvider = Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
                         );
+                        final token = authProvider.token;
+
+                        if (token == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Por favor inicia sesión para publicar',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+
+                        await communityProvider.createPost(
+                          message: content,
+                          token: token,
+                        );
+
                         _newPostController.clear();
                         await communityProvider
                             .fetchPosts(); // refresca la lista
                       }
                     },
+
                     child: const Text('Publicar'),
                   ),
                 ],
@@ -109,6 +128,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   itemCount: posts.length,
                   itemBuilder: (context, index) {
                     final post = posts[index];
+                    final authProvider = Provider.of<AuthProvider>(
+                      context,
+                      listen: false,
+                    );
+                    final token = authProvider.token;
+
                     return _buildPostCard(
                       context: context,
                       user: post['User']?['email'] ?? 'Anónimo',
@@ -128,7 +153,19 @@ class _CommunityScreenState extends State<CommunityScreen> {
                           .toString(),
                       achievement: 'Participante',
                       color: const Color(0xFF4CAF50),
-                      onLike: () => communityProvider.likePost(post['id']),
+
+                      // 👇 Aquí corregimos el error
+                      onLike: () {
+                        if (token == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Inicia sesión para dar like'),
+                            ),
+                          );
+                          return;
+                        }
+                        communityProvider.likePost(post['id'], token);
+                      },
                     );
                   },
                 ),
