@@ -1,52 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:huella/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
+import '../../providers/community_provider.dart';
 
-class CommunityScreen extends StatelessWidget {
+class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
 
   @override
+  State<CommunityScreen> createState() => _CommunityScreenState();
+}
+
+class _CommunityScreenState extends State<CommunityScreen> {
+  final TextEditingController _newPostController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Provider.of<CommunityProvider>(context, listen: false).fetchPosts();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _newPostController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final posts = [
-      {
-        'user': 'María García',
-        'avatar': 'M',
-        'text': '¡Reciclamos en mi colonia hoy! Logramos recolectar más de 50kg de plástico. 🌍',
-        'time': 'Hace 2 horas',
-        'likes': 24,
-        'comments': 5,
-        'achievement': 'Reciclador Pro',
-        'color': const Color(0xFF4CAF50),
-      },
-      {
-        'user': 'Luis Hernández',
-        'avatar': 'L',
-        'text': 'Hice bici al trabajo toda la semana. Me siento genial y lleno de energía! 🚴‍♂️',
-        'time': 'Hace 5 horas',
-        'likes': 18,
-        'comments': 3,
-        'achievement': 'Ciclista Urbano',
-        'color': const Color(0xFFFF9800),
-      },
-      {
-        'user': 'Ana Martínez',
-        'avatar': 'A',
-        'text': 'Instalé un sistema de captación de agua de lluvia en casa. ¡Cada gota cuenta! 💧',
-        'time': 'Hace 1 día',
-        'likes': 42,
-        'comments': 12,
-        'achievement': 'Guardián del Agua',
-        'color': const Color(0xFF2196F3),
-      },
-      {
-        'user': 'Carlos Ruiz',
-        'avatar': 'C',
-        'text': 'Mi familia y yo plantamos 10 árboles este fin de semana. ¡El planeta nos lo agradecerá! 🌳',
-        'time': 'Hace 2 días',
-        'likes': 67,
-        'comments': 18,
-        'achievement': 'Plantador Maestro',
-        'color': const Color(0xFF66BB6A),
-      },
-    ];
+    final communityProvider = Provider.of<CommunityProvider>(context);
+    final posts = communityProvider.posts;
 
     return Container(
       decoration: BoxDecoration(
@@ -60,198 +47,238 @@ class CommunityScreen extends StatelessWidget {
         ),
       ),
       child: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF9C27B0).withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.people_rounded,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Comunidad',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2E7D32),
-                                ),
-                              ),
-                              Text(
-                                'Inspírate con otros',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    // Tarjeta de estadísticas de comunidad
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF9C27B0).withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _buildCommunityStatItem(
-                              icon: Icons.people_rounded,
-                              value: '1,234',
-                              label: 'Miembros',
-                            ),
-                          ),
-                          Container(
-                            width: 1,
-                            height: 40,
-                            color: Colors.white.withValues(alpha: 0.3),
-                          ),
-                          Expanded(
-                            child: _buildCommunityStatItem(
-                              icon: Icons.eco_rounded,
-                              value: '5,678',
-                              label: 'Retos completados',
-                            ),
-                          ),
-                          Container(
-                            width: 1,
-                            height: 40,
-                            color: Colors.white.withValues(alpha: 0.3),
-                          ),
-                          Expanded(
-                            child: _buildCommunityStatItem(
-                              icon: Icons.public_rounded,
-                              value: '12.5T',
-                              label: 'CO₂ ahorrado',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Últimas publicaciones',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2E7D32),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.fiber_manual_record_rounded,
-                                size: 8,
-                                color: const Color(0xFF4CAF50),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                'En vivo',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF4CAF50),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                ),
+        child: Column(
+          children: [
+            // --- Header ---
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 20),
+                  _buildCommunityStats(),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle(),
+                ],
               ),
             ),
-            
-            // Lista de publicaciones
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
+
+            // --- Input para nueva publicación ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _newPostController,
+                      decoration: InputDecoration(
+                        hintText: '¿Qué quieres compartir?',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final content = _newPostController.text.trim();
+                      if (content.isNotEmpty) {
+                        final authProvider = Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        );
+                        final token = authProvider.token;
+
+                        if (token == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Por favor inicia sesión para publicar',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+
+                        await communityProvider.createPost(
+                          message: content,
+                          token: token,
+                        );
+
+                        _newPostController.clear();
+                        await communityProvider
+                            .fetchPosts(); // refresca la lista
+                      }
+                    },
+
+                    child: const Text('Publicar'),
+                  ),
+                ],
+              ),
+            ),
+
+            // --- Lista de publicaciones ---
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async => await communityProvider.fetchPosts(),
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
                     final post = posts[index];
+                    final authProvider = Provider.of<AuthProvider>(
+                      context,
+                      listen: false,
+                    );
+                    final token = authProvider.token;
+
                     return _buildPostCard(
                       context: context,
-                      user: post['user'] as String,
-                      avatar: post['avatar'] as String,
-                      text: post['text'] as String,
-                      time: post['time'] as String,
-                      likes: post['likes'] as int,
-                      comments: post['comments'] as int,
-                      achievement: post['achievement'] as String,
-                      color: post['color'] as Color,
+                      user: post['User']?['email'] ?? 'Anónimo',
+                      avatar:
+                          post['User']?['email']
+                              ?.substring(0, 1)
+                              .toUpperCase() ??
+                          'U',
+                      text: post['message'] ?? '',
+                      time: post['createdAt'] != null
+                          ? DateTime.parse(
+                              post['createdAt'],
+                            ).toLocal().toIso8601String().split('T')[0]
+                          : 'Reciente',
+                      likes: (post['likes'] ?? 0).toString(),
+                      comments: ((post['comentarios'] ?? []) as List).length
+                          .toString(),
+                      achievement: 'Participante',
+                      color: const Color(0xFF4CAF50),
+
+                      // 👇 Aquí corregimos el error
+                      onLike: () {
+                        if (token == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Inicia sesión para dar like'),
+                            ),
+                          );
+                          return;
+                        }
+                        communityProvider.likePost(post['id'], token);
+                      },
                     );
                   },
-                  childCount: posts.length,
                 ),
               ),
-            ),
-            
-            // Espaciado inferior
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 20),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ------------------ COMPONENTES ------------------
+
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF9C27B0).withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.people_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
+        const SizedBox(width: 16),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Comunidad',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2E7D32),
+                ),
+              ),
+              Text(
+                'Inspírate con otros',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommunityStats() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF9C27B0).withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildCommunityStatItem(
+              icon: Icons.people_rounded,
+              value: '1,234',
+              label: 'Miembros',
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 40,
+            color: Colors.white.withValues(alpha: 0.3),
+          ),
+          Expanded(
+            child: _buildCommunityStatItem(
+              icon: Icons.eco_rounded,
+              value: '5,678',
+              label: 'Retos completados',
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 40,
+            color: Colors.white.withValues(alpha: 0.3),
+          ),
+          Expanded(
+            child: _buildCommunityStatItem(
+              icon: Icons.public_rounded,
+              value: '12.5T',
+              label: 'CO₂ ahorrado',
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -286,16 +313,58 @@ class CommunityScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildSectionTitle() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'Últimas publicaciones',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2E7D32),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Row(
+            children: [
+              Icon(
+                Icons.fiber_manual_record_rounded,
+                size: 8,
+                color: Color(0xFF4CAF50),
+              ),
+              SizedBox(width: 6),
+              Text(
+                'En vivo',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF4CAF50),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPostCard({
     required BuildContext context,
     required String user,
     required String avatar,
     required String text,
     required String time,
-    required int likes,
-    required int comments,
+    required String likes,
+    required String comments,
     required String achievement,
     required Color color,
+    required VoidCallback onLike,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -313,6 +382,7 @@ class CommunityScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // --- Header del post ---
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -384,15 +454,13 @@ class CommunityScreen extends StatelessWidget {
                 ),
                 Text(
                   time,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                 ),
               ],
             ),
           ),
-          
+
+          // --- Contenido ---
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
@@ -404,9 +472,9 @@ class CommunityScreen extends StatelessWidget {
               ),
             ),
           ),
-          
           const SizedBox(height: 16),
-          
+
+          // --- Botones ---
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -422,25 +490,7 @@ class CommunityScreen extends StatelessWidget {
                   icon: Icons.favorite_rounded,
                   label: likes.toString(),
                   color: Colors.red,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Row(
-                          children: [
-                            Icon(Icons.favorite, color: Colors.white),
-                            SizedBox(width: 12),
-                            Text('¡Te gustó esta publicación!'),
-                          ],
-                        ),
-                        backgroundColor: Colors.red,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
+                  onTap: onLike,
                 ),
                 const SizedBox(width: 20),
                 _buildActionButton(
@@ -449,13 +499,11 @@ class CommunityScreen extends StatelessWidget {
                   color: const Color(0xFF2196F3),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Funcionalidad de comentarios próximamente'),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                      const SnackBar(
+                        content: Text(
+                          'Funcionalidad de comentarios próximamente',
                         ),
-                        duration: const Duration(seconds: 2),
+                        duration: Duration(seconds: 2),
                       ),
                     );
                   },
@@ -467,20 +515,9 @@ class CommunityScreen extends StatelessWidget {
                   color: const Color(0xFF4CAF50),
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Row(
-                          children: [
-                            Icon(Icons.share, color: Colors.white),
-                            SizedBox(width: 12),
-                            Text('Compartiendo...'),
-                          ],
-                        ),
-                        backgroundColor: const Color(0xFF4CAF50),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        duration: const Duration(seconds: 2),
+                      const SnackBar(
+                        content: Text('Compartiendo...'),
+                        duration: Duration(seconds: 2),
                       ),
                     );
                   },

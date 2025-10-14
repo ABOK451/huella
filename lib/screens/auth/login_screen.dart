@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'register_screen.dart';
 import '../home/home_screen.dart';
 import 'package:huella/core/utils/validators.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
@@ -321,7 +324,52 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               shadowColor: const Color(0xFF4CAF50).withValues(alpha: 0.5),
                             ),
-                            onPressed: _loading ? null : _submit,
+onPressed: _loading
+    ? null
+    : () async {
+        print("🔵 Botón login presionado");
+
+        if (!_formKey.currentState!.validate()) {
+          print("❌ Formulario no válido");
+          return;
+        }
+
+        setState(() => _loading = true);
+
+        try {
+          final auth = Provider.of<AuthProvider>(context, listen: false);
+          final res = await auth.login(
+            _emailCtl.text.trim(),
+            _passCtl.text.trim(),
+          );
+
+          print("🟢 Resultado login: $res");
+
+          if (res['ok'] == true) {
+  Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+} else {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(res['message'] ?? 'Credenciales incorrectas'),
+      backgroundColor: Colors.red,
+    ),
+  );
+}
+
+        } catch (e) {
+          print("❌ Error en login: $e");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Error de autenticación'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } finally {
+          if (mounted) {
+            setState(() => _loading = false);
+          }
+        }
+      },
                             child: _loading
                                 ? const SizedBox(
                                     height: 24,
