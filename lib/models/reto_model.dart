@@ -25,98 +25,46 @@ class Reto {
 
   factory Reto.fromJson(Map<String, dynamic> json) {
     return Reto(
-      id: json['id'],
-      titulo: json['titulo'],
-      descripcion: json['descripcion'],
-      categoria: json['categoria'],
-      dificultad: json['dificultad'],
-      puntos: json['puntos'] ?? 10,
-      impactoCo2: (json['impacto_co2'] ?? 0).toDouble(),
-      impactoAgua: (json['impacto_agua'] ?? 0).toDouble(),
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      titulo: json['titulo'] ?? '',
+      descripcion: json['descripcion'] ?? '',
+      categoria: json['categoria'] ?? '',
+      dificultad: json['dificultad'] ?? 'facil',
+      puntos: json['puntos'] is int ? json['puntos'] : int.tryParse(json['puntos'].toString()) ?? 10,
+      impactoCo2: _parseDouble(json['impacto_co2']),
+      impactoAgua: _parseDouble(json['impacto_agua']),
       instrucciones: json['instrucciones'],
-      activo: json['activo'] ?? true,
+      activo: json['activo'] == true || json['activo'] == 1,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'titulo': titulo,
-      'descripcion': descripcion,
-      'categoria': categoria,
-      'dificultad': dificultad,
-      'puntos': puntos,
-      'impacto_co2': impactoCo2,
-      'impacto_agua': impactoAgua,
-      'instrucciones': instrucciones,
-      'activo': activo,
-    };
-  }
-
-  String get categoriaLabel {
-    switch (categoria) {
-      case 'agua':
-        return 'Agua';
-      case 'energia':
-        return 'Energía';
-      case 'transporte':
-        return 'Transporte';
-      case 'residuos':
-        return 'Residuos';
-      case 'consumo':
-        return 'Consumo Responsable';
-      default:
-        return categoria;
-    }
-  }
-
-  String get dificultadLabel {
-    switch (dificultad) {
-      case 'facil':
-        return 'Fácil';
-      case 'medio':
-        return 'Medio';
-      case 'dificil':
-        return 'Difícil';
-      default:
-        return dificultad;
-    }
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0.0;
   }
 }
 
 class RetoUsuario {
   final int id;
-  final int usuarioId;
-  final int retoId;
-  final bool completado;
-  final DateTime fechaAsignacion;
-  final DateTime? fechaCompletado;
-  final String? notas;
-  final Reto? reto;
+  final Reto reto;
+  final DateTime completadoEn;
+  final String estado;
 
   RetoUsuario({
     required this.id,
-    required this.usuarioId,
-    required this.retoId,
-    required this.completado,
-    required this.fechaAsignacion,
-    this.fechaCompletado,
-    this.notas,
-    this.reto,
+    required this.reto,
+    required this.completadoEn,
+    required this.estado,
   });
 
   factory RetoUsuario.fromJson(Map<String, dynamic> json) {
     return RetoUsuario(
-      id: json['id'],
-      usuarioId: json['usuarioId'],
-      retoId: json['retoId'],
-      completado: json['completado'] ?? false,
-      fechaAsignacion: DateTime.parse(json['fechaAsignacion']),
-      fechaCompletado: json['fechaCompletado'] != null
-          ? DateTime.parse(json['fechaCompletado'])
-          : null,
-      notas: json['notas'],
-      reto: json['Reto'] != null ? Reto.fromJson(json['Reto']) : null,
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      reto: Reto.fromJson(json['reto'] ?? {}),
+      completadoEn: DateTime.parse(json['completadoEn'] ?? DateTime.now().toIso8601String()),
+      estado: json['estado'] ?? 'pendiente',
     );
   }
 }

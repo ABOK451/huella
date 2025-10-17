@@ -1,433 +1,260 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart'; // NECESARIO para kIsWeb
+import 'dart:typed_data'; // NECESARIO para Uint8List (mostrar imagen en Web)
+
 import 'package:huella/models/reto_model.dart';
 import 'package:huella/providers/retos_provider.dart';
-
+import 'package:huella/providers/auth_provider.dart'; // Para obtener el token
 
 class RetoDetalleScreen extends StatefulWidget {
-  final RetoUsuario retoUsuario;
+  final Reto reto;
+  final String tipo; // tipo del reto: 'foto', 'checklist', 'ubicacion'
+  final List<String>? tareas; // para checklist
+  final double? latitud; // para ubicación
+  final double? longitud;
 
-  const RetoDetalleScreen({Key? key, required this.retoUsuario}) : super(key: key);
+  const RetoDetalleScreen({
+    super.key,
+    required this.reto,
+    this.tipo = 'foto',
+    this.tareas,
+    this.latitud,
+    this.longitud,
+  });
 
   @override
   State<RetoDetalleScreen> createState() => _RetoDetalleScreenState();
 }
 
 class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
-  final RetosService _retosService = RetosService();
-  final TextEditingController _notasController = TextEditingController();
-  bool _isCompleting = false;
+  // 🚩 CAMBIO: Usamos XFile para compatibilidad Web
+  XFile? _imagenEvidencia; 
+  List<Map<String, dynamic>> _tareas = [];
+  bool _ubicacionVerificada = false;
 
   @override
-  void dispose() {
-    _notasController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    if (widget.tipo == 'checklist' && widget.tareas != null) {
+      _tareas = widget.tareas!
+          .map((t) => {'texto': t, 'completado': false})
+          .toList();
+    }
+  }
+
+  // --- Seleccionar imagen para reto tipo "foto"
+  Future<void> _seleccionarImagen() async {
+    final picker = ImagePicker();
+    // NOTA: En Web, source: ImageSource.camera puede no funcionar sin HTTPS
+    final picked = await picker.pickImage(source: ImageSource.camera); 
+    if (picked != null) {
+      setState(() {
+        _imagenEvidencia = picked; // 🚩 Guardamos XFile
+      });
+    }
+  }
+
+  // --- Verificar ubicación para reto tipo "ubicacion"
+  Future<void> _verificarUbicacion() async {
+    // Código de Geolocator... (no requiere cambios para el error actual)
+    LocationPermission permiso = await Geolocator.requestPermission();
+    if (permiso == LocationPermission.denied) return;
+
+    Position pos = await Geolocator.getCurrentPosition();
+    double distancia = Geolocator.distanceBetween(
+      pos.latitude,
+      pos.longitude,
+      widget.latitud ?? 0,
+      widget.longitud ?? 0,
+    );
+
+    if (distancia < 100) {
+      setState(() => _ubicacionVerificada = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ubicación verificada ✅')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No estás en el lugar correcto ❌')),
+      );
+    }
+  }
+
+  // --- Completar reto
+  Future<void> _completarReto() async {
+    final retosProvider = Provider.of<RetosProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.token; // 👈 Obteniendo el token
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Token de autenticación no encontrado.')),
+      );
+      return;
+    }
+
+    // Validaciones según tipo de reto
+    if (widget.tipo == 'foto' && _imagenEvidencia == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sube una foto antes de completar')),
+      );
+      return;
+    }
+
+    if (widget.tipo == 'checklist') {
+      final completadas = _tareas.where((t) => t['completado'] == true).length;
+      if (completadas < _tareas.length) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Completa todas las tareas primero')),
+        );
+        return;
+      }
+    }
+
+    if (widget.tipo == 'ubicacion' && !_ubicacionVerificada) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Verifica tu ubicación primero')),
+      );
+      return;
+    }
+    
+    // 🚩 MANEJO CONDICIONAL DEL ARCHIVO DE EVIDENCIA
+    File? evidenciaFile;
+    // Solo creamos el dart:io.File si NO es web
+    if (!kIsWeb && _imagenEvidencia != null) { 
+      evidenciaFile = File(_imagenEvidencia!.path);
+    } 
+    // NOTA: Si necesitas subir archivos en la Web, se requerirá una modificación al backend 
+    // y al RetosProvider para aceptar bytes de Uint8List, ya que File no existe en Web. 
+    // Para esta corrección, solo se permite la subida en móvil.
+
+    // Llamada al backend
+    final ok = await retosProvider.completarReto(
+      retoId: widget.reto.id.toString(),
+      token: token, // 👈 INYECTANDO EL TOKEN
+      evidencia: evidenciaFile, // 👈 Usamos evidenciaFile (será null en web)
+      datosExtra: {
+        'tipo': widget.tipo,
+        'tareas': _tareas,
+        'ubicacion': _ubicacionVerificada,
+      },
+    );
+
+    if (ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Reto completado con éxito! 🎉')),
+      );
+      Navigator.pop(context, true);
+    } else if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al completar el reto.')),
+        );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final reto = widget.retoUsuario.reto;
-    if (reto == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: const Center(child: Text('Reto no encontrado')),
-      );
-    }
+    final tipo = widget.tipo;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalle del Reto'),
-        backgroundColor: Colors.green[700],
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(title: Text(widget.reto.titulo)),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: ListView(
           children: [
-            _buildHeader(reto),
-            _buildContent(reto),
-            if (!widget.retoUsuario.completado) _buildCompletarSection(),
+            Text(widget.reto.descripcion),
             const SizedBox(height: 20),
+
+            if (tipo == 'foto') _buildFotoReto(),
+            if (tipo == 'checklist') _buildChecklist(),
+            if (tipo == 'ubicacion') _buildUbicacion(),
+
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.check_circle_outline),
+              label: const Text('Marcar como completado'),
+              onPressed: _completarReto,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(Reto reto) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [_getCategoriaColor(reto.categoria), _getCategoriaColor(reto.categoria).withOpacity(0.7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _getCategoriaIcon(reto.categoria),
-                  color: Colors.white,
-                  size: 40,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      reto.categoriaLabel,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      reto.titulo,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildHeaderChip(reto.dificultadLabel, Icons.speed),
-              const SizedBox(width: 8),
-              _buildHeaderChip('${reto.puntos} puntos', Icons.stars),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderChip(String label, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContent(Reto reto) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Descripción',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            reto.descripcion,
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey[700],
-              height: 1.5,
-            ),
-          ),
-          if (reto.instrucciones != null) ...[
-            const SizedBox(height: 24),
-            const Text(
-              'Instrucciones',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              reto.instrucciones!,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[700],
-                height: 1.5,
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          const Text(
-            'Impacto Positivo',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildImpactoCard(
-            'CO₂ Ahorrado',
-            '${reto.impactoCo2} kg',
-            Icons.eco,
-            Colors.green,
-          ),
-          const SizedBox(height: 8),
-          _buildImpactoCard(
-            'Agua Ahorrada',
-            '${reto.impactoAgua} litros',
-            Icons.water_drop,
-            Colors.blue,
-          ),
-          if (widget.retoUsuario.completado) ...[
-            const SizedBox(height: 24),
-            _buildCompletadoInfo(),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImpactoCard(String titulo, String valor, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
+  Widget _buildFotoReto() {
+    return Column(
+      children: [
+        if (_imagenEvidencia != null)
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
+            height: 180,
+            alignment: Alignment.center,
+            child: Builder(
+              builder: (context) {
+                if (kIsWeb) {
+                  // 🚩 SOLUCIÓN WEB: Usamos Image.memory
+                  return FutureBuilder<Uint8List>(
+                    future: _imagenEvidencia!.readAsBytes(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
+                        return Image.memory(snapshot.data!, fit: BoxFit.cover, height: 180);
+                      }
+                      return const CircularProgressIndicator();
+                    },
+                  );
+                } else {
+                  // 🚩 SOLUCIÓN MOBILE/Desktop: Usamos Image.file
+                  return Image.file(
+                    File(_imagenEvidencia!.path),
+                    height: 180, 
+                    fit: BoxFit.cover,
+                  );
+                }
+              },
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titulo,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  valor,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+          )
+        else
+          const Text('Sube una foto como evidencia'),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.camera_alt),
+          label: const Text('Tomar foto'),
+          onPressed: _seleccionarImagen,
+        ),
+      ],
     );
   }
 
-  Widget _buildCompletadoInfo() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle, color: Colors.green, size: 32),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '¡Reto Completado!',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
-                if (widget.retoUsuario.fechaCompletado != null)
-                  Text(
-                    'Completado el ${_formatDate(widget.retoUsuario.fechaCompletado!)}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompletarSection() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '¿Completaste este reto?',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _notasController,
-            decoration: InputDecoration(
-              hintText: 'Comparte tu experiencia (opcional)',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              prefixIcon: const Icon(Icons.note),
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isCompleting ? null : _completarReto,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[700],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isCompleting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text(
-                      'Marcar como Completado',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _completarReto() async {
-    setState(() => _isCompleting = true);
-    
-    try {
-      final exito = await _retosService.completarReto(
-        widget.retoUsuario.id,
-        notas: _notasController.text.trim().isEmpty ? null : _notasController.text.trim(),
-      );
-
-      if (exito && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Felicidades! Reto completado 🎉'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
+  Widget _buildChecklist() {
+    return Column(
+      children: _tareas.map((t) {
+        return CheckboxListTile(
+          title: Text(t['texto']),
+          value: t['completado'],
+          onChanged: (val) => setState(() => t['completado'] = val),
         );
-        Navigator.pop(context, true);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al completar reto: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isCompleting = false);
-      }
-    }
+      }).toList(),
+    );
   }
 
-  Color _getCategoriaColor(String categoria) {
-    switch (categoria) {
-      case 'agua':
-        return Colors.blue;
-      case 'energia':
-        return Colors.orange;
-      case 'transporte':
-        return Colors.purple;
-      case 'residuos':
-        return Colors.brown;
-      case 'consumo':
-        return Colors.teal;
-      default:
-        return Colors.green;
-    }
-  }
-
-  IconData _getCategoriaIcon(String categoria) {
-    switch (categoria) {
-      case 'agua':
-        return Icons.water_drop;
-      case 'energia':
-        return Icons.bolt;
-      case 'transporte':
-        return Icons.directions_bike;
-      case 'residuos':
-        return Icons.recycling;
-      case 'consumo':
-        return Icons.shopping_bag;
-      default:
-        return Icons.eco;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+  Widget _buildUbicacion() {
+    return Column(
+      children: [
+        Text(
+          _ubicacionVerificada
+              ? 'Ubicación verificada ✅'
+              : 'Verifica que estás en el lugar indicado.',
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.location_on),
+          label: const Text('Verificar ubicación'),
+          onPressed: _verificarUbicacion,
+        ),
+      ],
+    );
   }
 }
