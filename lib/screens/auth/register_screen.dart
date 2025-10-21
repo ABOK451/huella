@@ -26,9 +26,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final response = await authProvider.register(
+        _nameCtl.text.trim(),   // ⚠️ Agrega el nombre
         _emailCtl.text.trim(),
         _passCtl.text.trim(),
       );
+
 
       if (!mounted) return;
 
