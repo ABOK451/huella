@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:huella/screens/comunity/comunity_screen.dart';
 import 'package:huella/screens/profile/profile_screen.dart';
-import 'retos_screen.dart';
+import 'package:huella/screens/retos/reto_screen.dart';
 import 'impacto_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,11 +13,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _current = 0;
-  final _pages = const [
-    HomeContent(),
-    RetosScreen(),
-    ImpactoScreen(),
-    CommunityScreen()
+  final _pages =  [
+    const HomeContent(),
+    RetoScreen(),
+    const ImpactoScreen(),
+    const CommunityScreen()
   ];
 
   @override
