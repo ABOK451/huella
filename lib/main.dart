@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:huella/providers/retos_provider.dart';
 import 'package:provider/provider.dart';
 
 // Providers
@@ -25,7 +26,8 @@ class HuellaApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => CommunityProvider()), 
+        ChangeNotifierProvider(create: (_) => CommunityProvider()),
+        ChangeNotifierProvider(create: (_) => RetosProvider()),
       ],
       child: MaterialApp(
         title: 'Huella+',
