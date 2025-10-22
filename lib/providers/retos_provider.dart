@@ -72,7 +72,6 @@ class RetosProvider extends ChangeNotifier {
   }
 }
 
-  // --- HISTORIAL DE RETOS
   Future<List<Map<String, dynamic>>?> obtenerHistorial({required String token}) async {
     if (token.isEmpty) return null;
 
@@ -80,7 +79,24 @@ class RetosProvider extends ChangeNotifier {
     try {
       final res = await http.get(url, headers: {'Authorization': 'Bearer $token'});
       if (res.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(jsonDecode(res.body));
+        final List<dynamic> jsonList = jsonDecode(res.body);
+        // Mapear correctamente los retos dentro de cada RetoUsuario
+        final historial = jsonList
+          .where((item) => item['completado'] == true) // filtrar solo los completados
+          .map<Map<String, dynamic>>((item) {
+        final reto = item['reto'] ?? {};
+        return {
+          'id': item['id'],
+          'completado': item['completado'],
+          'fechaAsignacion': item['fechaAsignacion'],
+          'fechaCompletado': item['fechaCompletado'],
+          'notas': item['notas'],
+          'reto': reto,
+        };
+      }).toList();
+
+      debugPrint('Historial completado: $historial');
+        return historial;
       } else {
         debugPrint('Error obtener historial: ${res.statusCode}');
         return null;
@@ -91,24 +107,25 @@ class RetosProvider extends ChangeNotifier {
     }
   }
 
-  // --- ESTADÍSTICAS
   Future<Map<String, dynamic>?> obtenerEstadisticas({required String token}) async {
-    if (token.isEmpty) return null;
+  if (token.isEmpty) return null;
 
-    final url = Uri.parse('$baseUrl/retos/estadisticas');
-    try {
-      final res = await http.get(url, headers: {'Authorization': 'Bearer $token'});
-      if (res.statusCode == 200) {
-        return jsonDecode(res.body);
-      } else {
-        debugPrint('Error estadísticas: ${res.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      debugPrint('Error estadísticas: $e');
+  final url = Uri.parse('$baseUrl/retos/estadisticas');
+  try {
+    final res = await http.get(url, headers: {'Authorization': 'Bearer $token'});
+    if (res.statusCode == 200) {
+      debugPrint('Estadísticas recibidas: ${res.body}'); // ✅ log para depuración
+      return jsonDecode(res.body);
+    } else {
+      debugPrint('Error estadísticas: ${res.statusCode}');
       return null;
     }
+  } catch (e) {
+    debugPrint('Error estadísticas: $e');
+    return null;
   }
+}
+
 
   // --- OBTENER RETOS POR CATEGORÍA
   Future<List<Map<String, dynamic>>?> obtenerRetosPorCategoria({
