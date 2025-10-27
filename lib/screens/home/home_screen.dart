@@ -17,7 +17,8 @@ class _HomeScreenState extends State<HomeScreen> {
     const HomeContent(),
     RetoScreen(),
     const ImpactoScreen(),
-    const CommunityScreen()
+    const CommunityScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -60,6 +61,10 @@ class _HomeScreenState extends State<HomeScreen> {
             BottomNavigationBarItem(
               icon: Icon(Icons.people_rounded),
               label: 'Comunidad',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded),
+              label: 'Perfil',
             ),
           ],
         ),
