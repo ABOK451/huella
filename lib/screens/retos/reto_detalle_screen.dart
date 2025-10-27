@@ -196,6 +196,7 @@ class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
 
     final ok = await retosProvider.completarReto(
       retoUsuarioId: widget.reto.id.toString(),
+
       token: token,
       evidencia: !kIsWeb
           ? (_imagenEvidencia != null ? File(_imagenEvidencia!.path) : null)
@@ -281,9 +282,7 @@ class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: config['gradient'] as List<Color>,
-        ),
+        gradient: LinearGradient(colors: config['gradient'] as List<Color>),
       ),
       child: Column(
         children: [
@@ -296,14 +295,20 @@ class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
               const Spacer(),
               // Badge de dificultad
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(20),
@@ -360,7 +365,11 @@ class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.stars_rounded, color: Color(0xFFFF9800), size: 20),
+                const Icon(
+                  Icons.stars_rounded,
+                  color: Color(0xFFFF9800),
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   '+${widget.reto.puntos} puntos',
@@ -479,111 +488,108 @@ class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
           ),
         ],
       ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2196F3).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    color: Color(0xFF2196F3),
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Evidencia Fotográfica',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1B5E20),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (_imagenEvidencia != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  height: 250,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                  ),
-                  child: kIsWeb
-                      ? (_imagenWeb != null
-                          ? Image.memory(
-                              _imagenWeb!,
-                              fit: BoxFit.cover,
-                            )
-                          : const Center(child: CircularProgressIndicator()))
-                      : Image.file(
-                          File(_imagenEvidencia!.path),
-                          fit: BoxFit.cover,
-                        ),
-                ),
-              )
-            else
+      child: Column(
+        children: [
+          Row(
+            children: [
               Container(
-                height: 200,
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.grey.shade300,
-                    width: 2,
-                    strokeAlign: BorderSide.strokeAlignInside,
-                  ),
+                  color: const Color(0xFF2196F3).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.add_a_photo_rounded,
-                        size: 64,
-                        color: Colors.grey.shade400,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Toma una foto como evidencia',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: Color(0xFF2196F3),
+                  size: 24,
                 ),
               ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _seleccionarImagen,
-                icon: const Icon(Icons.camera_alt_rounded),
-                label: Text(_imagenEvidencia != null ? 'Cambiar foto' : 'Tomar foto'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2196F3),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
+              const SizedBox(width: 12),
+              const Text(
+                'Evidencia Fotográfica',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B5E20),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          if (_imagenEvidencia != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                height: 250,
+                width: double.infinity,
+                decoration: BoxDecoration(color: Colors.grey.shade100),
+                child: kIsWeb
+                    ? (_imagenWeb != null
+                          ? Image.memory(_imagenWeb!, fit: BoxFit.cover)
+                          : const Center(child: CircularProgressIndicator()))
+                    : Image.file(
+                        File(_imagenEvidencia!.path),
+                        fit: BoxFit.cover,
+                      ),
+              ),
+            )
+          else
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignInside,
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 64,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Toma una foto como evidencia',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
-      );
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _seleccionarImagen,
+              icon: const Icon(Icons.camera_alt_rounded),
+              label: Text(
+                _imagenEvidencia != null ? 'Cambiar foto' : 'Tomar foto',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2196F3),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildChecklist() {
@@ -603,128 +609,133 @@ class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
           ),
         ],
       ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.checklist_rounded,
+                  color: Color(0xFF9C27B0),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Lista de Tareas',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1B5E20),
                   ),
-                  child: const Icon(
-                    Icons.checklist_rounded,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '$completadas/${_tareas.length}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                     color: Color(0xFF9C27B0),
-                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    'Lista de Tareas',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1B5E20),
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$completadas/${_tareas.length}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF9C27B0),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Barra de progreso
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: LinearProgressIndicator(
-                value: progreso,
-                minHeight: 8,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF9C27B0)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Barra de progreso
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: progreso,
+              minHeight: 8,
+              backgroundColor: Colors.grey.shade200,
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF9C27B0),
               ),
             ),
-            const SizedBox(height: 20),
-            // Tareas
-            ..._tareas.asMap().entries.map((entry) {
-              final index = entry.key;
-              final tarea = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Container(
-                  decoration: BoxDecoration(
+          ),
+          const SizedBox(height: 20),
+          // Tareas
+          ..._tareas.asMap().entries.map((entry) {
+            final index = entry.key;
+            final tarea = entry.value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: tarea['completado']
+                      ? const Color(0xFF9C27B0).withValues(alpha: 0.05)
+                      : Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
                     color: tarea['completado']
-                        ? const Color(0xFF9C27B0).withValues(alpha: 0.05)
-                        : Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: tarea['completado']
-                          ? const Color(0xFF9C27B0).withValues(alpha: 0.3)
-                          : Colors.grey.shade300,
-                    ),
-                  ),
-                  child: CheckboxListTile(
-                    value: tarea['completado'],
-                    onChanged: (val) {
-                      setState(() => tarea['completado'] = val);
-                    },
-                    title: Text(
-                      tarea['texto'],
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: tarea['completado']
-                            ? const Color(0xFF9C27B0)
-                            : const Color(0xFF424242),
-                        decoration: tarea['completado']
-                            ? TextDecoration.lineThrough
-                            : null,
-                      ),
-                    ),
-                    secondary: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: tarea['completado']
-                            ? const Color(0xFF9C27B0)
-                            : Colors.grey.shade300,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(
-                          color: tarea['completado']
-                              ? Colors.white
-                              : Colors.grey.shade700,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    activeColor: const Color(0xFF9C27B0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                        ? const Color(0xFF9C27B0).withValues(alpha: 0.3)
+                        : Colors.grey.shade300,
                   ),
                 ),
-              );
-            }),
-          ],
-        ),
-      );
+                child: CheckboxListTile(
+                  value: tarea['completado'],
+                  onChanged: (val) {
+                    setState(() => tarea['completado'] = val);
+                  },
+                  title: Text(
+                    tarea['texto'],
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: tarea['completado']
+                          ? const Color(0xFF9C27B0)
+                          : const Color(0xFF424242),
+                      decoration: tarea['completado']
+                          ? TextDecoration.lineThrough
+                          : null,
+                    ),
+                  ),
+                  secondary: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: tarea['completado']
+                          ? const Color(0xFF9C27B0)
+                          : Colors.grey.shade300,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        color: tarea['completado']
+                            ? Colors.white
+                            : Colors.grey.shade700,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  activeColor: const Color(0xFF9C27B0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
   }
 
   Widget _buildUbicacion() {
@@ -741,127 +752,124 @@ class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
           ),
         ],
       ),
-        child: Column(
-          children: [
-            Row(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF5722).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.location_on_rounded,
+                  color: Color(0xFFFF5722),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Verificación de Ubicación',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B5E20),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: _ubicacionVerificada
+                  ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
+                  : Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _ubicacionVerificada
+                    ? const Color(0xFF4CAF50)
+                    : Colors.grey.shade300,
+                width: 2,
+              ),
+            ),
+            child: Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF5722).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.location_on_rounded,
-                    color: Color(0xFFFF5722),
-                    size: 24,
+                Icon(
+                  _ubicacionVerificada
+                      ? Icons.check_circle_rounded
+                      : Icons.location_searching_rounded,
+                  size: 64,
+                  color: _ubicacionVerificada
+                      ? const Color(0xFF4CAF50)
+                      : Colors.grey.shade400,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _ubicacionVerificada
+                      ? 'Ubicación verificada correctamente'
+                      : 'Debes estar en el lugar indicado',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: _ubicacionVerificada
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey.shade700,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Verificación de Ubicación',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1B5E20),
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  _ubicacionVerificada
+                      ? '¡Perfecto! Puedes completar el reto'
+                      : 'Verifica tu ubicación para continuar',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: _ubicacionVerificada
-                    ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
-                    : Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: _ubicacionVerificada
-                      ? const Color(0xFF4CAF50)
-                      : Colors.grey.shade300,
-                  width: 2,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    _ubicacionVerificada
-                        ? Icons.check_circle_rounded
-                        : Icons.location_searching_rounded,
-                    size: 64,
-                    color: _ubicacionVerificada
-                        ? const Color(0xFF4CAF50)
-                        : Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    _ubicacionVerificada
-                        ? 'Ubicación verificada correctamente'
-                        : 'Debes estar en el lugar indicado',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: _ubicacionVerificada
-                          ? const Color(0xFF4CAF50)
-                          : Colors.grey.shade700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _ubicacionVerificada
-                        ? '¡Perfecto! Puedes completar el reto'
-                        : 'Verifica tu ubicación para continuar',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _procesando ? null : _verificarUbicacion,
-                icon: _procesando
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Icon(
-                        _ubicacionVerificada
-                            ? Icons.refresh_rounded
-                            : Icons.my_location_rounded,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _procesando ? null : _verificarUbicacion,
+              icon: _procesando
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
-                label: Text(
-                  _procesando
-                      ? 'Verificando...'
-                      : _ubicacionVerificada
-                          ? 'Verificar nuevamente'
-                          : 'Verificar ubicación',
+                    )
+                  : Icon(
+                      _ubicacionVerificada
+                          ? Icons.refresh_rounded
+                          : Icons.my_location_rounded,
+                    ),
+              label: Text(
+                _procesando
+                    ? 'Verificando...'
+                    : _ubicacionVerificada
+                    ? 'Verificar nuevamente'
+                    : 'Verificar ubicación',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF5722),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF5722),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
+                elevation: 0,
               ),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildFloatingButton() {
@@ -882,10 +890,7 @@ class _RetoDetalleScreenState extends State<RetoDetalleScreen> {
             : const Icon(Icons.check_circle_rounded, size: 28),
         label: Text(
           _procesando ? 'Completando...' : 'Completar Reto',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF4CAF50),

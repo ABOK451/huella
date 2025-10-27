@@ -25,12 +25,16 @@ class Reto {
 
   factory Reto.fromJson(Map<String, dynamic> json) {
     return Reto(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      id: json['id'] is int
+          ? json['id']
+          : int.tryParse(json['id'].toString()) ?? 0,
       titulo: json['titulo'] ?? '',
       descripcion: json['descripcion'] ?? '',
       categoria: json['categoria'] ?? '',
       dificultad: json['dificultad'] ?? 'facil',
-      puntos: json['puntos'] is int ? json['puntos'] : int.tryParse(json['puntos'].toString()) ?? 10,
+      puntos: json['puntos'] is int
+          ? json['puntos']
+          : int.tryParse(json['puntos'].toString()) ?? 10,
       impactoCo2: _parseDouble(json['impacto_co2']),
       impactoAgua: _parseDouble(json['impacto_agua']),
       instrucciones: json['instrucciones'],
@@ -61,9 +65,13 @@ class RetoUsuario {
 
   factory RetoUsuario.fromJson(Map<String, dynamic> json) {
     return RetoUsuario(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      id: json['retoUsuarioId'] is int
+          ? json['id']
+          : int.tryParse(json['id'].toString()) ?? 0,
       reto: Reto.fromJson(json['reto'] ?? {}),
-      completadoEn: DateTime.parse(json['completadoEn'] ?? DateTime.now().toIso8601String()),
+      completadoEn: DateTime.parse(
+        json['completadoEn'] ?? DateTime.now().toIso8601String(),
+      ),
       estado: json['estado'] ?? 'pendiente',
     );
   }

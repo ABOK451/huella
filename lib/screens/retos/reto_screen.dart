@@ -57,13 +57,19 @@ class _RetoScreenState extends State<RetoScreen> with TickerProviderStateMixin {
       final data = await retosProvider.obtenerRetoDiario(token: token);
 
       if (data != null && data.isNotEmpty) {
-        final List<Reto> nuevosRetos =
-            data.map((map) => Reto.fromJson(map)).toList();
+        final List<Reto> nuevosRetos = data
+            .map((map) => Reto.fromJson(map))
+            .toList();
 
         setState(() {
           retosDiarios = nuevosRetos;
           cargando = false;
         });
+
+        print("=== Retos cargados ===");
+        for (final r in nuevosRetos) {
+          print("ID: ${r.id} | Título: ${r.titulo}");
+        }
       } else {
         setState(() {
           errorMsg = 'No se pudieron cargar retos diarios.';
@@ -187,8 +193,8 @@ class _RetoScreenState extends State<RetoScreen> with TickerProviderStateMixin {
     final retosFiltrados = categoriaSeleccionada == null
         ? retosDiarios
         : retosDiarios
-            .where((r) => r.categoria == categoriaSeleccionada)
-            .toList();
+              .where((r) => r.categoria == categoriaSeleccionada)
+              .toList();
 
     final categorias = retosDiarios
         .map((r) => r.categoria)
@@ -219,107 +225,119 @@ class _RetoScreenState extends State<RetoScreen> with TickerProviderStateMixin {
                     : FadeTransition(
                         opacity: _animController!,
                         child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, -0.3),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                            parent: _animController!,
-                            curve: Curves.easeOut,
-                          )),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFFF6F00),
-                                      Color(0xFFFF9800)
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFFF9800)
-                                          .withValues(alpha: 0.4),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.emoji_events_rounded,
-                                  color: Colors.white,
-                                  size: 32,
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(0, -0.3),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: _animController!,
+                                  curve: Curves.easeOut,
                                 ),
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
-                                    const Text(
-                                      'Retos Diarios',
-                                      style: TextStyle(
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1B5E20),
-                                        height: 1.1,
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Color(0xFFFF6F00),
+                                            Color(0xFFFF9800),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(
+                                              0xFFFF9800,
+                                            ).withValues(alpha: 0.4),
+                                            blurRadius: 16,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.emoji_events_rounded,
+                                        color: Colors.white,
+                                        size: 32,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 4,
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Retos Diarios',
+                                            style: TextStyle(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF1B5E20),
+                                              height: 1.1,
+                                            ),
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF4CAF50)
-                                                .withValues(alpha: 0.2),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: const Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                          const SizedBox(height: 4),
+                                          Row(
                                             children: [
-                                              Icon(
-                                                Icons.local_fire_department_rounded,
-                                                size: 16,
-                                                color: Color(0xFF2E7D32),
-                                              ),
-                                              SizedBox(width: 4),
-                                              Text(
-                                                'Gana puntos',
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  color: Color(0xFF2E7D32),
-                                                  fontWeight: FontWeight.w600,
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFF4CAF50,
+                                                  ).withValues(alpha: 0.2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: const Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      Icons
+                                                          .local_fire_department_rounded,
+                                                      size: 16,
+                                                      color: Color(0xFF2E7D32),
+                                                    ),
+                                                    SizedBox(width: 4),
+                                                    Text(
+                                                      'Gana puntos',
+                                                      style: TextStyle(
+                                                        fontSize: 13,
+                                                        color: Color(
+                                                          0xFF2E7D32,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                ),
               ),
 
               // Tarjeta de progreso mejorada
@@ -380,8 +398,9 @@ class _RetoScreenState extends State<RetoScreen> with TickerProviderStateMixin {
                                     icon: _getCategoryIcon(cat),
                                     isSelected: categoriaSeleccionada == cat,
                                     onTap: () {
-                                      setState(() =>
-                                          categoriaSeleccionada = cat);
+                                      setState(
+                                        () => categoriaSeleccionada = cat,
+                                      );
                                     },
                                   ),
                                 ),
@@ -398,28 +417,25 @@ class _RetoScreenState extends State<RetoScreen> with TickerProviderStateMixin {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                 sliver: SliverGrid(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final reto = retosFiltrados[index];
-                      if (_animController == null) {
-                        return _buildRetoCard(reto);
-                      }
-                      return FadeTransition(
-                        opacity: Tween<double>(begin: 0, end: 1).animate(
-                          CurvedAnimation(
-                            parent: _animController!,
-                            curve: Interval(
-                              (index * 0.1).clamp(0.0, 1.0),
-                              ((index * 0.1) + 0.3).clamp(0.0, 1.0),
-                              curve: Curves.easeOut,
-                            ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final reto = retosFiltrados[index];
+                    if (_animController == null) {
+                      return _buildRetoCard(reto);
+                    }
+                    return FadeTransition(
+                      opacity: Tween<double>(begin: 0, end: 1).animate(
+                        CurvedAnimation(
+                          parent: _animController!,
+                          curve: Interval(
+                            (index * 0.1).clamp(0.0, 1.0),
+                            ((index * 0.1) + 0.3).clamp(0.0, 1.0),
+                            curve: Curves.easeOut,
                           ),
                         ),
-                        child: _buildRetoCard(reto),
-                      );
-                    },
-                    childCount: retosFiltrados.length,
-                  ),
+                      ),
+                      child: _buildRetoCard(reto),
+                    );
+                  }, childCount: retosFiltrados.length),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
@@ -607,10 +623,7 @@ class _RetoScreenState extends State<RetoScreen> with TickerProviderStateMixin {
                     const SizedBox(height: 4),
                     const Text(
                       'retos completados',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                   ],
                 ),
@@ -881,8 +894,9 @@ class _RetoScreenState extends State<RetoScreen> with TickerProviderStateMixin {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50)
-                                .withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF4CAF50,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

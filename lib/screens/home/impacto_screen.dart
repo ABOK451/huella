@@ -41,7 +41,7 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
 
     try {
       final data = await retosProvider.obtenerEstadisticas(token: token);
-      
+
       if (data != null) {
         setState(() {
           estadisticas = data;
@@ -152,15 +152,20 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
 
     // Extraer datos de las estadísticas
     final impacto = estadisticas?['impacto'] ?? {};
-    final co2Ahorrado = double.tryParse(impacto['co2Ahorrado']?.toString() ?? '0') ?? 0.0;
-    final aguaAhorrada = double.tryParse(impacto['aguaAhorrada']?.toString() ?? '0') ?? 0.0;
+    final co2Ahorrado =
+        double.tryParse(impacto['co2Ahorrado']?.toString() ?? '0') ?? 0.0;
+    final aguaAhorrada =
+        double.tryParse(impacto['aguaAhorrada']?.toString() ?? '0') ?? 0.0;
     final puntosGanados = impacto['puntosGanados'] ?? 0;
     final completados = estadisticas?['completados'] ?? 0;
     final total = estadisticas?['total'] ?? 0;
-    final porcentaje = double.tryParse(estadisticas?['porcentajeCompletado']?.toString() ?? '0') ?? 0.0;
-
+    final porcentaje =
+        double.tryParse(
+          estadisticas?['porcentajeCompletado']?.toString() ?? '0',
+        ) ??
+        0.0;
     // Calcular el impacto total combinado
-    final impactoTotal = co2Ahorrado + aguaAhorrada;
+    //final impactoTotal = co2Ahorrado + aguaAhorrada;
 
     return Container(
       decoration: BoxDecoration(
@@ -219,10 +224,7 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
                         ),
                         Text(
                           'Cada acción cuenta',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -230,72 +232,6 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
                 ],
               ),
               const SizedBox(height: 28),
-
-              // Tarjeta de resumen total
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF2196F3), Color(0xFF42A5F5)],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2196F3).withValues(alpha: 0.4),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.emoji_events_rounded,
-                      color: Colors.white,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Impacto Total',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${impactoTotal.toStringAsFixed(1)} kg',
-                      style: const TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '$completados de $total retos completados',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
 
               // Tarjeta de progreso
               Container(
@@ -331,7 +267,9 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF4CAF50,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -351,8 +289,12 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
                       child: LinearProgressIndicator(
                         value: porcentaje / 100,
                         minHeight: 12,
-                        backgroundColor: const Color(0xFF4CAF50).withValues(alpha: 0.1),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                        backgroundColor: const Color(
+                          0xFF4CAF50,
+                        ).withValues(alpha: 0.1),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF4CAF50),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -380,6 +322,7 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
               const SizedBox(height: 24),
 
               // Título de métricas
+              const SizedBox(height: 24),
               const Text(
                 'Desglose de tu impacto',
                 style: TextStyle(
@@ -397,10 +340,12 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
                 value: aguaAhorrada.toStringAsFixed(1),
                 unit: 'litros',
                 color: const Color(0xFF2196F3),
-                description: aguaAhorrada > 0 
+                description: aguaAhorrada > 0
                     ? 'Equivalente a ${(aguaAhorrada / 1.5).toStringAsFixed(0)} botellas de 1.5L'
-                    : 'Completa retos para ahorrar agua',
-                progress: aguaAhorrada > 0 ? (aguaAhorrada / 20).clamp(0.0, 1.0) : 0.0,
+                    : 'Completa retos de agua para generar impacto',
+                progress: aguaAhorrada > 0
+                    ? (aguaAhorrada / 20).clamp(0.0, 1.0)
+                    : 0.0,
               ),
               const SizedBox(height: 16),
 
@@ -413,25 +358,28 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
                 color: const Color(0xFF9C27B0),
                 description: co2Ahorrado > 0
                     ? 'Como plantar ${(co2Ahorrado / 0.6).toStringAsFixed(0)} árboles'
-                    : 'Completa retos para reducir CO₂',
-                progress: co2Ahorrado > 0 ? (co2Ahorrado / 4).clamp(0.0, 1.0) : 0.0,
+                    : 'Completa retos de energía o transporte para reducir CO₂',
+                progress: co2Ahorrado > 0
+                    ? (co2Ahorrado / 4).clamp(0.0, 1.0)
+                    : 0.0,
               ),
               const SizedBox(height: 16),
 
-              // Tarjeta: Residuos reciclados (calculado como suma)
+              // Tarjeta: Puntos ganados
               _buildImpactCard(
-                icon: Icons.recycling_rounded,
-                title: 'Impacto total',
-                value: impactoTotal.toStringAsFixed(1),
-                unit: 'kg',
-                color: const Color(0xFF4CAF50),
-                description: impactoTotal > 0
-                    ? 'Recursos totales salvados'
-                    : 'Completa retos para generar impacto',
-                progress: impactoTotal > 0 ? (impactoTotal / 20).clamp(0.0, 1.0) : 0.0,
+                icon: Icons.stars_rounded,
+                title: 'Puntos ganados',
+                value: puntosGanados.toString(),
+                unit: 'pts',
+                color: const Color(0xFFFFC107),
+                description: puntosGanados > 0
+                    ? 'Has ganado puntos por completar tus retos'
+                    : 'Completa retos para ganar puntos',
+                progress: total > 0
+                    ? (completados / total).clamp(0.0, 1.0)
+                    : 0.0,
               ),
               const SizedBox(height: 24),
-
               // Mensaje motivacional
               Container(
                 padding: const EdgeInsets.all(20),
@@ -514,11 +462,7 @@ class _ImpactoScreenState extends State<ImpactoScreen> {
                     color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 32,
-                  ),
+                  child: Icon(icon, color: color, size: 32),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
